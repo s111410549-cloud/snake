@@ -3,122 +3,117 @@
     margin: 0;
     padding: 0;
     user-select: none;
+    touch-action: manipulation;
 }
 
 body {
-    background: radial-gradient(circle at center, #101524 0%, #070913 100%);
-    color: #fff;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0f141c;
+    color: #e2e8f0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    overflow: hidden;
+    padding: 10px;
 }
 
-/* 頂部計分板 */
+/* 上方資訊列 */
 .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    max-width: 420px;
-    padding: 15px 20px;
-    z-index: 10;
+    max-width: 380px;
+    padding: 10px 5px;
+    margin-bottom: 5px;
 }
 
 h1 {
-    font-size: 22px;
-    letter-spacing: 2px;
-    text-shadow: 0 0 10px #00f0ff;
-    color: #00f0ff;
+    font-size: 20px;
+    font-weight: 800;
+    color: #38bdf8;
 }
 
 .score-container {
     display: flex;
     gap: 15px;
     font-size: 14px;
-    font-weight: bold;
-    color: #a0aec0;
+    font-weight: 600;
+    color: #94a3b8;
 }
 
-.score-container span id {
-    color: #fff;
-    text-shadow: 0 0 5px #fff;
+.score-container span {
+    color: #f8fafc;
 }
 
-/* 遊戲畫布外框 */
-.canvas-wrapper {
+/* 遊戲 Canvas 包裝區 */
+.canvas-container {
     position: relative;
-    border-radius: 16px;
-    padding: 4px;
-    background: linear-gradient(135deg, #00f0ff, #ff007f);
-    box-shadow: 0 0 25px rgba(0, 240, 255, 0.3);
-    margin-bottom: 20px;
+    border-radius: 20px;
+    padding: 6px;
+    background: linear-gradient(145deg, #1e293b, #0f172a);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.1);
+    margin-bottom: 15px;
 }
 
 canvas {
-    background-color: #0d1117;
-    border-radius: 12px;
+    background: #111827;
+    border-radius: 14px;
     display: block;
 }
 
-/* 重新分配的手機按鍵：經典十字鈕結構 */
+/* 經典電玩十字鍵排列 */
 .controls {
     display: grid;
-    grid-template-columns: repeat(3, 75px);
-    grid-template-rows: repeat(3, 60px);
-    gap: 10px;
+    grid-template-columns: repeat(3, 80px);
+    grid-template-rows: repeat(3, 65px);
+    gap: 12px;
     justify-content: center;
     width: 100%;
-    max-width: 300px;
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 .btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    color: white;
-    font-size: 20px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    color: #f1f5f9;
+    font-size: 22px;
     font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    backdrop-filter: blur(5px);
-    transition: all 0.1s ease;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    transition: background 0.1s, transform 0.1s, border-color 0.1s;
 }
 
 .btn:active {
-    background: rgba(0, 240, 255, 0.3);
-    border-color: #00f0ff;
-    box-shadow: 0 0 15px #00f0ff;
-    transform: scale(0.95);
+    background: #38bdf8;
+    color: #0f172a;
+    border-color: #7dd3fc;
+    transform: scale(0.92);
 }
 
-/* 區塊定位 */
+/* 各按鈕擺放柵格位置 */
 #btn-up { grid-column: 2; grid-row: 1; }
 #btn-left { grid-column: 1; grid-row: 2; }
 #btn-restart { 
     grid-column: 2; 
     grid-row: 2; 
-    font-size: 14px; 
-    background: rgba(255, 0, 127, 0.1); 
-    border-color: rgba(ff, 0, 127, 0.3);
-    color: #ff007f;
+    font-size: 15px; 
+    background: #334155; 
+    border-color: #475569;
 }
 #btn-restart:active {
-    background: rgba(255, 0, 127, 0.4);
-    border-color: #ff007f;
-    box-shadow: 0 0 15px #ff007f;
+    background: #ef4444;
+    color: white;
+    border-color: #f87171;
 }
 #btn-right { grid-column: 3; grid-row: 2; }
 #btn-down { grid-column: 2; grid-row: 3; }
 
-/* 隱藏沒用到的格子 */
 .controls div:empty {
     visibility: hidden;
 }
