@@ -13,10 +13,24 @@ let highScore = localStorage.getItem('snake_high_score') || 0;
 let gameInterval;
 const gameSpeed = 100; 
 
+// 緩衝佇列：防止快速連續按鍵時原地回頭自殺
+let inputQueue = [];
+
+// 一開始先在畫面上顯示歷史最高分數
 document.getElementById('highScore').innerText = highScore;
 
 // 遊戲主迴圈
 function main() {
+    // 消耗輸入佇列裡面的指令
+    if (inputQueue.length > 0) {
+        const nextMove = inputQueue.shift();
+        // 確保不會做出 180 度反向的自殺移動
+        if ((nextMove.dx !== 0 && dx === 0) || (nextMove.dy !== 0 && dy === 0)) {
+            dx = nextMove.dx;
+            dy = nextMove.dy;
+        }
+    }
+
     if (hasGameEnded()) {
         ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -24,6 +38,8 @@ function main() {
         ctx.font = "bold 24px 'Segoe UI'";
         ctx.textAlign = "center";
         ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
+        
+        // 檢查並更新最高分數
         if (score > highScore) {
             highScore = score;
             localStorage.setItem('snake_high_score', highScore);
@@ -44,9 +60,13 @@ function startGame() {
     clearInterval(gameInterval);
     snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
     score = 0;
+    
+    // 【修正】確保每次重新開始時，畫面上的分數重設為 0
     document.getElementById('score').innerText = score;
+    
     dx = 1;
     dy = 0;
+    inputQueue = []; // 清空指令佇列
     generateFood();
     gameInterval = setInterval(main, gameSpeed);
 }
@@ -96,7 +116,15 @@ function drawSnake() {
             ctx.shadowBlur = 0;
             ctx.fillStyle = '#070913';
             ctx.beginPath();
-            ctx.arc(x + 12, y + 8, 2, 0, 2 * Math.PI);
+            
+            // 根據目前的 dx, dy 稍微調整眼睛位置，看起來更靈動
+            let eyeX = x + 10, eyeY = y + 10;
+            if (dx === 1)  { eyeX = x + 13; eyeY = y + 7; }
+            if (dx === -1) { eyeX = x + 7;  eyeY = y + 7; }
+            if (dy === 1)  { eyeX = x + 7;  eyeY = y + 13; }
+            if (dy === -1) { eyeX = x + 7;  eyeY = y + 7; }
+            
+            ctx.arc(eyeX, eyeY, 2, 0, 2 * Math.PI);
             ctx.fill();
         }
     });
@@ -128,9 +156,10 @@ function moveSnake() {
     const head = { x: snake[0].x + dx, y: snake[0].y + dy };
     snake.unshift(head);
 
+    // 【修正】當蛇吃到食物時
     if (snake[0].x === food.x && snake[0].y === food.y) {
-        score += 10;
-        document.getElementById('score').innerText = score;
+        score += 10; // 加 10 分
+        document.getElementById('score').innerText = score; // 即時更新到網頁畫面上！
         generateFood();
     } else {
         snake.pop();
@@ -156,19 +185,28 @@ function hasGameEnded() {
     return false;
 }
 
-// 鍵盤控制（保留電腦遊玩彈性）
+// 將方向指令推入緩衝佇列的安全函數
+function handleDirectionChange(newDx, newDy) {
+    const lastPlannedMove = inputQueue.length > 0 ? inputQueue[inputQueue.length - 1] : { dx, dy };
+    // 阻擋直接回頭的無效指令
+    if ((newDx !== 0 && lastPlannedMove.dx === 0) || (newDy !== 0 && lastPlannedMove.dy === 0)) {
+        inputQueue.push({ dx: newDx, dy: newDy });
+    }
+}
+
+// 鍵盤控制（改用佇列處理，操作極度絲滑）
 document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowUp' && dy === 0) { dx = 0; dy = -1; }
-    if (e.key === 'ArrowDown' && dy === 0) { dx = 0; dy = 1; }
-    if (e.key === 'ArrowLeft' && dx === 0) { dx = -1; dy = 0; }
-    if (e.key === 'ArrowRight' && dx === 0) { dx = 1; dy = 0; }
+    if (e.key === 'ArrowUp') handleDirectionChange(0, -1);
+    if (e.key === 'ArrowDown') handleDirectionChange(0, 1);
+    if (e.key === 'ArrowLeft') handleDirectionChange(-1, 0);
+    if (e.key === 'ArrowRight') handleDirectionChange(1, 0);
 });
 
-// 綁定虛擬按鈕點擊事件
-document.getElementById('btn-up').addEventListener('click', () => { if (dy === 0) { dx = 0; dy = -1; } });
-document.getElementById('btn-down').addEventListener('click', () => { if (dy === 0) { dx = 0; dy = 1; } });
-document.getElementById('btn-left').addEventListener('click', () => { if (dx === 0) { dx = -1; dy = 0; } });
-document.getElementById('btn-right').addEventListener('click', () => { if (dx === 0) { dx = 1; dy = 0; } });
+// 綁定虛擬按鈕點擊事件（改用佇列處理，連按也不怕）
+document.getElementById('btn-up').addEventListener('click', () => handleDirectionChange(0, -1));
+document.getElementById('btn-down').addEventListener('click', () => handleDirectionChange(0, 1));
+document.getElementById('btn-left').addEventListener('click', () => handleDirectionChange(-1, 0));
+document.getElementById('btn-right').addEventListener('click', () => handleDirectionChange(1, 0));
 document.getElementById('btn-restart').addEventListener('click', startGame);
 
 startGame();
