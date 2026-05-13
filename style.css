@@ -7,110 +7,129 @@
 }
 
 body {
-    background: #0f141c;
+    background: #0b0f17;
     color: #e2e8f0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    padding: 10px;
+    padding: 15px;
 }
 
-/* 上方資訊列 */
+/* 高級感頂部資訊列 */
 .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    max-width: 380px;
-    padding: 10px 5px;
-    margin-bottom: 5px;
+    max-width: 400px;
+    padding: 12px 20px;
+    background: rgba(20, 30, 45, 0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 16px;
+    margin-bottom: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 h1 {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 800;
-    color: #38bdf8;
+    color: #00f0ff;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+    letter-spacing: 2px;
 }
 
 .score-container {
     display: flex;
-    gap: 15px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #94a3b8;
+    gap: 20px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #8a99ad;
 }
 
 .score-container span {
-    color: #f8fafc;
+    color: #00f0ff;
+    text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
 }
 
-/* 遊戲 Canvas 包裝區 */
+#highScore {
+    color: #ff007f;
+    text-shadow: 0 0 8px rgba(255, 0, 127, 0.6);
+}
+
+/* 遊戲畫布容器 */
 .canvas-container {
     position: relative;
-    border-radius: 20px;
-    padding: 6px;
-    background: linear-gradient(145deg, #1e293b, #0f172a);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.1);
-    margin-bottom: 15px;
+    border-radius: 24px;
+    padding: 8px;
+    background: linear-gradient(145deg, #131c2d, #080d16);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 
+                0 0 30px rgba(0, 163, 255, 0.1);
+    margin-bottom: 20px;
 }
 
 canvas {
-    background: #111827;
-    border-radius: 14px;
+    background: #070a12;
+    border-radius: 16px;
     display: block;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
 }
 
-/* 經典電玩十字鍵排列 */
+/* 控制鍵區（科技風十字鍵） */
 .controls {
     display: grid;
-    grid-template-columns: repeat(3, 80px);
-    grid-template-rows: repeat(3, 65px);
-    gap: 12px;
+    grid-template-columns: repeat(3, 85px);
+    grid-template-rows: repeat(3, 70px);
+    gap: 15px;
     justify-content: center;
     width: 100%;
-    margin-top: 5px;
 }
 
 .btn {
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 16px;
-    color: #f1f5f9;
-    font-size: 22px;
+    background: linear-gradient(135deg, #141f32, #0d1624);
+    border: 1px solid rgba(0, 163, 255, 0.2);
+    border-radius: 18px;
+    color: #00f0ff;
+    font-size: 24px;
     font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-    transition: background 0.1s, transform 0.1s, border-color 0.1s;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    transition: all 0.15s ease;
 }
 
 .btn:active {
-    background: #38bdf8;
-    color: #0f172a;
-    border-color: #7dd3fc;
+    background: #00f0ff;
+    color: #070a12;
+    border-color: #00f0ff;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
     transform: scale(0.92);
 }
 
-/* 各按鈕擺放柵格位置 */
-#btn-up { grid-column: 2; grid-row: 1; }
-#btn-left { grid-column: 1; grid-row: 2; }
+/* 重設按鈕微調 */
 #btn-restart { 
     grid-column: 2; 
     grid-row: 2; 
-    font-size: 15px; 
-    background: #334155; 
-    border-color: #475569;
+    font-size: 14px; 
+    letter-spacing: 1px;
+    color: #ff007f;
+    border-color: rgba(255, 0, 127, 0.2);
 }
 #btn-restart:active {
-    background: #ef4444;
-    color: white;
-    border-color: #f87171;
+    background: #ff007f;
+    color: #ffffff;
+    border-color: #ff007f;
+    box-shadow: 0 0 20px rgba(255, 0, 127, 0.6);
 }
+
+#btn-up { grid-column: 2; grid-row: 1; }
+#btn-left { grid-column: 1; grid-row: 2; }
 #btn-right { grid-column: 3; grid-row: 2; }
 #btn-down { grid-column: 2; grid-row: 3; }
 
