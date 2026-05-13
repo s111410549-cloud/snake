@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>貪吃蛇 PWA</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0b4d7a" />
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <h1>貪吃蛇</h1>
+      <div class="status">
+        <span id="score">分數：0</span>
+        <button id="pauseBtn" class="control-button">暫停</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="game-container">
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+      </div>
+      <div class="message" id="message">按下開始鍵或方向鍵開始遊戲</div>
+    </main>
+
+    <nav class="mobile-controls">
+      <button class="control-button" id="upBtn">↑</button>
+      <div class="horizontal-controls">
+        <button class="control-button" id="leftBtn">←</button>
+        <button class="control-button" id="downBtn">↓</button>
+        <button class="control-button" id="rightBtn">→</button>
+      </div>
+    </nav>
+  </div>
+  <script src="game.js"></script>
+</body>
+</html>

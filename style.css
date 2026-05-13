@@ -1,0 +1,134 @@
+:root {
+  color-scheme: dark;
+  --bg: #071323;
+  --surface: #0d3359;
+  --surface-strong: #144a7f;
+  --text: #f8fbff;
+  --accent: #39c0ff;
+  --danger: #ff6b6b;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  min-height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: radial-gradient(circle at top, rgba(57, 192, 255, 0.15), transparent 40%), var(--bg);
+  color: var(--text);
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  padding: 12px;
+}
+
+.app-shell {
+  width: min(100%, 520px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+h1 {
+  font-size: 1.6rem;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.game-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 3px solid rgba(57, 192, 255, 0.4);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(14, 44, 75, 0.96), rgba(5, 14, 34, 0.96));
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.message {
+  text-align: center;
+  font-size: 0.95rem;
+  color: rgba(248, 251, 255, 0.8);
+}
+
+.mobile-controls {
+  display: grid;
+  gap: 12px;
+  padding: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  background: rgba(4, 12, 24, 0.8);
+}
+
+.mobile-controls button,
+.control-button {
+  min-height: 54px;
+  min-width: 54px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.35rem;
+  color: var(--text);
+  background: linear-gradient(145deg, var(--surface), var(--surface-strong));
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.24);
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.control-button:hover,
+.control-button:focus-visible {
+  transform: translateY(-1px);
+  outline: none;
+  background: linear-gradient(145deg, #185a8d, #1f6baf);
+}
+
+.control-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.horizontal-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 460px) {
+  body {
+    padding: 8px;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+  }
+
+  .control-button {
+    min-height: 50px;
+    font-size: 1.2rem;
+  }
+}

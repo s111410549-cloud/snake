@@ -1,0 +1,9 @@
+{
+  "name": "貪吃蛇 PWA",
+  "short_name": "貪吃蛇",
+  "description": "簡單好玩的貪吃蛇行動版 PWA",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#071323",
+  "theme_color": "#0b4d7a"
+}
