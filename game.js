@@ -10,19 +10,19 @@ let dx = 1;
 let dy = 0;
 let score = 0;
 
-// 【精準修正】統一分數快取主鍵，避開命名不一致的衝突
+// 統一分數快取主鍵
 let highScore = localStorage.getItem('snake_cyber_high_score') || 0;
 let gameInterval;
 const gameSpeed = 100; 
 
-// 移動指令緩衝佇列（防死鎖、防自殺）
+// 移動指令緩衝佇列
 let inputQueue = [];
 
 // 初始化顯示最高得分
 document.getElementById('highScore').innerText = highScore;
 
 function main() {
-    // 每幀消耗佇列中第一個有效指令
+    // 1. 每幀消耗佇列中第一個有效指令
     if (inputQueue.length > 0) {
         const nextMove = inputQueue.shift();
         if ((nextMove.dx !== 0 && dx === 0) || (nextMove.dy !== 0 && dy === 0)) {
@@ -31,15 +31,19 @@ function main() {
         }
     }
 
+    // 2. 【核心修正】先讓蛇移動，更新座標並切掉尾巴
+    moveSnake();
+
+    // 3. 【核心修正】接著才檢查新位置有沒有撞牆或撞自己
     if (checkGameOver()) {
         handleGameOver();
         return;
     }
 
+    // 4. 最後清空並重新渲染畫面
     clearCanvas();
     drawGrid();
     drawFood();
-    moveSnake();
     drawSnake();
 }
 
@@ -48,7 +52,6 @@ function startGame() {
     snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
     score = 0;
     
-    // 【同步修正】確保重開時畫面與邏輯數值同步歸零
     document.getElementById('score').innerText = score;
     
     dx = 1;
@@ -65,24 +68,28 @@ function clearCanvas() {
 
 // 繪製雷射網格背景
 function drawGrid() {
-    ctx.strokeStyle = 'rgba(0, 240, 255, 0.03)';
+    ctx.save(); // 儲存狀態，避免網格設定污染蛇的特效
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.08)'; // 稍微調亮一點點，讓雷射感明顯
     ctx.lineWidth = 1;
     for (let i = 0; i <= canvas.width; i += gridSize) {
         ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
     }
+    ctx.restore();
 }
 
 // 繪製極光漸層發光蛇身
 function drawSnake() {
     snake.forEach((part, index) => {
+        ctx.save(); // 獨立每一節蛇身的繪圖狀態，確保發光不互卡
+        
         const isHead = index === 0;
         const x = part.x * gridSize;
         const y = part.y * gridSize;
         const r = isHead ? 7 : 4;
 
-        // 【質感關鍵】注入物理發光陰影深度
-        ctx.shadowBlur = isHead ? 16 : 8;
+        // 【美化強化】強力注入物理發光陰影深度
+        ctx.shadowBlur = isHead ? 18 : 8;
         ctx.shadowColor = isHead ? '#00f0ff' : '#00a3ff';
         
         // 飽和度色散漸層
@@ -94,7 +101,7 @@ function drawSnake() {
         
         // 繪製雙向眼神
         if (isHead) {
-            ctx.shadowBlur = 0;
+            ctx.shadowBlur = 0; // 眼睛不發光
             ctx.fillStyle = '#060914';
             let eyeX1 = x + 10, eyeY1 = y + 10;
             let eyeX2 = x + 10, eyeY2 = y + 10;
@@ -107,23 +114,25 @@ function drawSnake() {
             ctx.beginPath(); ctx.arc(eyeX1, eyeY1, 2, 0, 2 * Math.PI); ctx.fill();
             ctx.beginPath(); ctx.arc(eyeX2, eyeY2, 2, 0, 2 * Math.PI); ctx.fill();
         }
+        
+        ctx.restore(); // 恢復狀態
     });
-    ctx.shadowBlur = 0; // 關閉全局陰影防效能下滑
 }
 
 // 繪製高能亮芯食物晶體
 function drawFood() {
+    ctx.save();
     const x = food.x * gridSize;
     const y = food.y * gridSize;
 
-    ctx.shadowBlur = 18;
+    ctx.shadowBlur = 20;
     ctx.shadowColor = '#ff007f';
     
     let gradient = ctx.createRadialGradient(
         x + 10, y + 10, 1,
         x + 10, y + 10, 10
     );
-    gradient.addColorStop(0, '#ffffff'); // 亮白亮芯效果
+    gradient.addColorStop(0, '#ffffff'); // 亮白亮芯
     gradient.addColorStop(0.3, '#ff66b2');
     gradient.addColorStop(1, '#ff007f');
     
@@ -132,17 +141,16 @@ function drawFood() {
     ctx.roundRect(x + 2, y + 2, gridSize - 4, gridSize - 4, 6);
     ctx.fill();
     
-    ctx.shadowBlur = 0;
+    ctx.restore();
 }
 
 function moveSnake() {
     const head = { x: snake[0].x + dx, y: snake[0].y + dy };
     snake.unshift(head);
 
-    // 【即時更新機制】
     if (snake[0].x === food.x && snake[0].y === food.y) {
         score += 10;
-        document.getElementById('score').innerText = score; // 將記憶體數值強制洗入網頁節點中
+        document.getElementById('score').innerText = score;
         generateFood();
     } else {
         snake.pop();
@@ -170,6 +178,7 @@ function checkGameOver() {
 }
 
 function handleGameOver() {
+    ctx.save();
     ctx.fillStyle = "rgba(7, 10, 18, 0.85)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
@@ -185,12 +194,12 @@ function handleGameOver() {
     ctx.font = "14px sans-serif";
     ctx.fillText("點擊 ↻ 按鈕再次挑戰", canvas.width / 2, canvas.height / 2 + 25);
 
-    // 分數持久化防丟失修正
     if (score > highScore) {
         highScore = score;
         localStorage.setItem('snake_cyber_high_score', highScore);
         document.getElementById('highScore').innerText = highScore;
     }
+    ctx.restore();
 }
 
 function pushDirection(newDx, newDy) {
