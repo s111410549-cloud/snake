@@ -1,181 +1,174 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const scoreEl = document.getElementById('score');
-const messageEl = document.getElementById('message');
-const pauseBtn = document.getElementById('pauseBtn');
-const controls = {
-  up: document.getElementById('upBtn'),
-  down: document.getElementById('downBtn'),
-  left: document.getElementById('leftBtn'),
-  right: document.getElementById('rightBtn'),
-};
 
-const gridSize = 20;
-const tileCount = 20;
-const speed = 100;
-let direction = { x: 1, y: 0 };
-let nextDirection = { x: 1, y: 0 };
-let snake = [{ x: 10, y: 10 }];
-let apple = { x: 15, y: 10 };
+const gridTargetSize = 20;
+const tileCount = canvas.width / gridTargetSize;
+
+let snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
+let food = { x: 15, y: 7 };
+let dx = 1;
+let dy = 0;
 let score = 0;
-let running = false;
-let paused = false;
-let gameLoopId = null;
+let highScore = localStorage.getItem('snake_high_score') || 0;
+let gameInterval;
+const gameSpeed = 100; 
 
-function resetGame() {
-  snake = [{ x: 10, y: 10 }];
-  direction = { x: 1, y: 0 };
-  nextDirection = { x: 1, y: 0 };
-  score = 0;
-  paused = false;
-  placeApple();
-  updateScore();
-  messageEl.textContent = '點擊方向鍵開始遊戲';
+document.getElementById('highScore').innerText = highScore;
+
+// 遊戲主迴圈
+function main() {
+    if (hasGameEnded()) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#ff007f";
+        ctx.font = "bold 24px 'Segoe UI'";
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('snake_high_score', highScore);
+            document.getElementById('highScore').innerText = highScore;
+        }
+        return;
+    }
+
+    clearCanvas();
+    drawGrid();
+    drawFood();
+    moveSnake();
+    drawSnake();
 }
 
-function placeApple() {
-  apple = {
-    x: Math.floor(Math.random() * tileCount),
-    y: Math.floor(Math.random() * tileCount),
-  };
-
-  if (snake.some(part => part.x === apple.x && part.y === apple.y)) {
-    placeApple();
-  }
-}
-
-function updateScore() {
-  scoreEl.textContent = `分數：${score}`;
-}
-
-function draw() {
-  ctx.fillStyle = '#071323';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = '#39c0ff';
-  ctx.fillRect(apple.x * gridSize, apple.y * gridSize, gridSize, gridSize);
-
-  snake.forEach((part, index) => {
-    ctx.fillStyle = index === 0 ? '#e7f9ff' : '#67d4ff';
-    ctx.fillRect(part.x * gridSize + 1, part.y * gridSize + 1, gridSize - 2, gridSize - 2);
-  });
-}
-
-function update() {
-  if (!running || paused) return;
-
-  direction = nextDirection;
-  const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
-
-  if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount || snake.some(part => part.x === head.x && part.y === head.y)) {
-    endGame();
-    return;
-  }
-
-  snake.unshift(head);
-
-  if (head.x === apple.x && head.y === apple.y) {
-    score += 1;
-    updateScore();
-    placeApple();
-  } else {
-    snake.pop();
-  }
-
-  draw();
-}
-
-function gameLoop() {
-  update();
-  if (running && !paused) {
-    gameLoopId = setTimeout(gameLoop, speed);
-  }
-}
-
+// 建立定時器
 function startGame() {
-  if (!running) {
-    running = true;
-    paused = false;
-    messageEl.textContent = '遊戲進行中';
-    gameLoop();
-  } else if (paused) {
-    paused = false;
-    messageEl.textContent = '遊戲恢復';
-    gameLoop();
-  }
-  pauseBtn.textContent = '暫停';
+    clearInterval(gameInterval);
+    snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
+    score = 0;
+    document.getElementById('score').innerText = score;
+    dx = 1;
+    dy = 0;
+    generateFood();
+    gameInterval = setInterval(main, gameSpeed);
 }
 
-function togglePause() {
-  if (!running) {
-    startGame();
-    return;
-  }
-
-  paused = !paused;
-  pauseBtn.textContent = paused ? '繼續' : '暫停';
-  messageEl.textContent = paused ? '已暫停' : '繼續遊戲';
-  if (!paused) {
-    gameLoop();
-  }
+function clearCanvas() {
+    ctx.fillStyle = '#0d1117';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-function endGame() {
-  running = false;
-  paused = false;
-  messageEl.textContent = `遊戲結束，分數：${score}，請重新開始`;
-  pauseBtn.textContent = '重新開始';
-  clearTimeout(gameLoopId);
+// 繪製背景復古網格
+function drawGrid() {
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < canvas.width; i += gridTargetSize) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, canvas.height);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(canvas.width, i);
+        ctx.stroke();
+    }
 }
 
-function setDirection(x, y) {
-  if ((x === -direction.x && y === -direction.y) || (x === direction.x && y === direction.y)) {
-    return;
-  }
-  nextDirection = { x, y };
-  startGame();
+// 繪製霓虹發光的蛇
+function drawSnake() {
+    snake.forEach((part, index) => {
+        const isHead = index === 0;
+        
+        // 設定霓虹發光效果
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = isHead ? '#00f0ff' : '#00a3ff';
+        ctx.fillStyle = isHead ? '#00f0ff' : 'rgba(0, 163, 255, ' + (1 - index/snake.length * 0.6) + ')';
+        
+        // 畫出圓角蛇身
+        const x = part.x * gridTargetSize;
+        const y = part.y * gridTargetSize;
+        const r = isHead ? 6 : 4; // 圓角半徑
+        
+        ctx.beginPath();
+        ctx.roundRect(x + 1, y + 1, gridTargetSize - 2, gridTargetSize - 2, r);
+        ctx.fill();
+        
+        // 幫蛇頭點綴個小眼睛
+        if (isHead) {
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#070913';
+            ctx.beginPath();
+            ctx.arc(x + 12, y + 8, 2, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    });
+    ctx.shadowBlur = 0; // 還原陰影設定
 }
 
-window.addEventListener('keydown', (event) => {
-  switch (event.key) {
-    case 'ArrowUp':
-    case 'w':
-    case 'W':
-      setDirection(0, -1);
-      break;
-    case 'ArrowDown':
-    case 's':
-    case 'S':
-      setDirection(0, 1);
-      break;
-    case 'ArrowLeft':
-    case 'a':
-    case 'A':
-      setDirection(-1, 0);
-      break;
-    case 'ArrowRight':
-    case 'd':
-    case 'D':
-      setDirection(1, 0);
-      break;
-    case ' ': 
-      togglePause();
-      break;
-  }
+// 繪製蘋果（寶箱霓虹風）
+function drawFood() {
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = '#ff007f';
+    
+    // 漸層色食物
+    let gradient = ctx.createRadialGradient(
+        food.x * gridTargetSize + 10, food.y * gridTargetSize + 10, 2,
+        food.x * gridTargetSize + 10, food.y * gridTargetSize + 10, 10
+    );
+    gradient.addColorStop(0, '#ff66b2');
+    gradient.addColorStop(1, '#ff007f');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.roundRect(food.x * gridTargetSize + 2, food.y * gridTargetSize + 2, gridTargetSize - 4, gridTargetSize - 4, 5);
+    ctx.fill();
+    
+    ctx.shadowBlur = 0;
+}
+
+function moveSnake() {
+    const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+    snake.unshift(head);
+
+    if (snake[0].x === food.x && snake[0].y === food.y) {
+        score += 10;
+        document.getElementById('score').innerText = score;
+        generateFood();
+    } else {
+        snake.pop();
+    }
+}
+
+function generateFood() {
+    food.x = Math.floor(Math.random() * tileCount);
+    food.y = Math.floor(Math.random() * tileCount);
+    // 確保食物不會生在蛇身上
+    snake.forEach(part => {
+        if (part.x === food.x && part.y === food.y) generateFood();
+    });
+}
+
+function hasGameEnded() {
+    // 撞牆判定
+    if (snake[0].x < 0 || snake[0].x >= tileCount || snake[0].y < 0 || snake[0].y >= tileCount) return true;
+    // 撞自己判定
+    for (let i = 4; i < snake.length; i++) {
+        if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) return true;
+    }
+    return false;
+}
+
+// 鍵盤控制（保留電腦遊玩彈性）
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp' && dy === 0) { dx = 0; dy = -1; }
+    if (e.key === 'ArrowDown' && dy === 0) { dx = 0; dy = 1; }
+    if (e.key === 'ArrowLeft' && dx === 0) { dx = -1; dy = 0; }
+    if (e.key === 'ArrowRight' && dx === 0) { dx = 1; dy = 0; }
 });
 
-controls.up.addEventListener('click', () => setDirection(0, -1));
-controls.down.addEventListener('click', () => setDirection(0, 1));
-controls.left.addEventListener('click', () => setDirection(-1, 0));
-controls.right.addEventListener('click', () => setDirection(1, 0));
-pauseBtn.addEventListener('click', togglePause);
+// 綁定虛擬按鈕點擊事件
+document.getElementById('btn-up').addEventListener('click', () => { if (dy === 0) { dx = 0; dy = -1; } });
+document.getElementById('btn-down').addEventListener('click', () => { if (dy === 0) { dx = 0; dy = 1; } });
+document.getElementById('btn-left').addEventListener('click', () => { if (dx === 0) { dx = -1; dy = 0; } });
+document.getElementById('btn-right').addEventListener('click', () => { if (dx === 0) { dx = 1; dy = 0; } });
+document.getElementById('btn-restart').addEventListener('click', startGame);
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {
-      console.warn('Service Worker registration failed');
-    });
-  });
-}
-
-resetGame();
+startGame();
